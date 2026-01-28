@@ -18,7 +18,7 @@ function layoutNodeTitle(ctx, content) {
   var el = ''
   el += '<div class="header">'
   if (content && content.length > 0) {
-    el += content
+    el += `<span>${content}</span>`
   }
   el += '</div>'
   return el
@@ -34,19 +34,42 @@ function layoutNodeContent(ctx, content) {
   return el
 }
 
-module.exports = ctx => function(args, content = '') {
-  args = ctx.args.map(args, ['api', 'user', 'type', 'limit', 'hide', 'avatar'])
-  var el = ''
-  if (!args.type) {
-    args.type = 'timeline'
+module.exports = ctx => function(rawArgs, content = '') {
+  let args = {}
+  for (const item of rawArgs) {
+    if (typeof item !== 'string') continue
+    const idx = item.indexOf(':')
+    if (idx === -1) continue
+
+    const key = item.slice(0, idx)
+    const value = item.slice(idx + 1)
+    args[key] = value
   }
-  if (args.api && args.api.length > 0) {
-    el += `<div class="tag-plugin timeline ds-${args.type}"`
-    el += ' ' + ctx.args.joinTags(args, ['api', 'user', 'limit', 'hide', 'avatar']).join(' ')
-    el += '>'
-  } else {
-    el += '<div class="tag-plugin timeline">'
+
+  const type = args.type || 'timeline'
+
+  let classBuffer = ''
+  let attrBuffer = ''
+  if (args.api) {
+    args['data-api'] = args.api
+    delete args.api
+
+    const attrKeys = Object.keys(args).filter(
+      key =>
+        key !== 'type' &&
+        args[key] !== undefined &&
+        args[key] !== null &&
+        args[key] !== ''
+    )
+
+    classBuffer += ` data-service ds-${type}"`
+
+    if (attrKeys.length) {
+      attrBuffer += ' ' + ctx.args.joinTags(args, attrKeys).join(' ')
+    }
   }
+
+  let el = `<div class="tag-plugin timeline${classBuffer}"${attrBuffer}>`
 
   var arr = content.split(/<!--\s*node (.*?)\s*-->/g).filter(item => item.trim().length > 0)
   if (arr.length > 0) {

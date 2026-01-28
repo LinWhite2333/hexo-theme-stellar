@@ -25,7 +25,7 @@ module.exports = ctx => function(args) {
   if (!args.icon) {
     autofill.push('icon')
   }
-  if (args.desc) {
+  if (args.desc !== 'true' && args.desc !== true && !args.desc) {
     autofill.push('desc')
   }
   var el = ''
@@ -36,7 +36,7 @@ module.exports = ctx => function(args) {
   }
   el += ' cardlink'
   if (args.api) {
-    el += ` api="${args.api}"`
+    el += ` data-api="${args.api}"`
   }
   el += ' autofill="'
   el += autofill.join(',')
@@ -45,18 +45,14 @@ module.exports = ctx => function(args) {
 
   function loadIcon() {
     var el = ''
-    if (ctx.theme.config.plugins.lazyload && ctx.theme.config.plugins.lazyload.enable) {
-      el += '<div class="lazy img" data-bg="' + (args.icon || ctx.theme.config.default.link) + '"></div>'
-    } else {
-      el += '<div class="lazy img" style="background-image:url(&quot;' + (args.icon || ctx.theme.config.default.link) + '&quot;)"></div>'
-    }
+    el += '<div class="lazy img" data-bg="' + (args.icon || ctx.theme.config.default.link) + '"></div>'
     return el
   }
   function loadTitle() {
     return '<span class="title">' + (args.title || args.url) + '</span>'
   }
   function loadDesc() {
-    return '<span class="cap desc footnote"></span>'
+    return `<span class="cap desc footnote">${args.desc}</span>`
   }
   function loadLink() {
     return '<span class="cap link footnote">' + full_url_for(args.url) + '</span>'
